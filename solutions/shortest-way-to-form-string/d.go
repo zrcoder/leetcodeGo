@@ -37,15 +37,15 @@ source 和 target 两个字符串的长度介于 1 和 1000 之间。
 注意遍历时判断target里存在source中没有的字符时，直接返回 -1
 */
 func shortestWay(source string, target string) int {
-	inSource := make(map[byte]bool, 26)
-	for i := range source {
-		inSource[source[i]] = true
+	inSource := make([]bool, 26)
+	for _, v := range source {
+		inSource[v-'a'] = true
 	}
 	result := 0
 	s := 0
 	t := 0
 	for t < len(target) {
-		if !inSource[target[t]] {
+		if !inSource[target[t]-'a'] {
 			return -1
 		}
 		if source[s] == target[t] {

@@ -71,22 +71,6 @@ func (s *Solution) PickIndex1() int {
 }
 
 // 改用二分法
-func (s *Solution) PickIndex2() int {
-	target := rand.Intn(s.total[len(s.total)-1])
-	left, right := 0, len(s.total)-1
-	for left != right {
-		mid := (left + right) / 2
-		switch {
-		case s.total[mid] <= target:
-			left = mid + 1
-		case s.total[mid] > target:
-			right = mid
-		}
-	}
-	return left
-}
-
-// 二分法使用标准库，减少代码量
 func (s *Solution) PickIndex() int {
 	target := rand.Intn(s.total[len(s.total)-1])
 	return sort.Search(len(s.total), func(i int) bool {
