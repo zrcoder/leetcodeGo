@@ -28,7 +28,7 @@ https://leetcode-cn.com/problems/reconstruct-itinerary
 主要难点在于图有环
 这是数学里的欧拉“七桥问题”，即“一笔画”问题；类似问题：753. 破解保险箱
 
-对于当前节点 curr， 可以 dfs 遍历每一个邻接节点，按照邻接节点升序做 dfs，最后将 curr 加入结果 res
+对于当前节点 cur， 可以 dfs 遍历每一个邻接节点，按照邻接节点升序做 dfs，最后将 cur 加入结果 res
 这样最终结果就是 res 的逆序
 */
 func findItinerary(tickets [][]string) []string {

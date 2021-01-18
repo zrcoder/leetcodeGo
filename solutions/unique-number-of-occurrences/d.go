@@ -33,12 +33,12 @@ func uniqueOccurrences(arr []int) bool {
 	for _, v := range arr {
 		counts[v]++
 	}
-	set := make(map[int]struct{}, 0)
+	set := make(map[int]bool, 0)
 	for _, count := range counts {
-		if _, found := set[count]; found {
+		if set[count] {
 			return false
 		}
-		set[count] = struct{}{}
+		set[count] = true
 	}
 	return true
 }
@@ -53,30 +53,18 @@ func uniqueOccurrences1(arr []int) bool {
 		return true
 	}
 	sort.Ints(arr)
-	left, right := 0, 0
-	set := make(map[int]struct{}, 0)
-	for left < len(arr) && right < len(arr) {
-		right = left + searchFromRight(arr[left:], arr[left]) - 1
-		count := right - left + 1
-		if _, fount := set[count]; fount {
+	left := 0
+	set := make(map[int]bool, 0)
+	for left < len(arr) {
+		tmp := arr[left:]
+		count := sort.Search(len(tmp), func(i int) bool {
+			return tmp[i] > arr[left]
+		})
+		if set[count] {
 			return false
 		}
-		set[count] = struct{}{}
-		left = right + 1
+		set[count] = true
+		left += count
 	}
 	return true
-}
-
-// 从右向左查询，找到v要插入arr的位置，即arr中最后一个v的下一个位置
-func searchFromRight(arr []int, v int) int {
-	left, right := 0, len(arr)
-	for left < right {
-		mid := left + (right-left)/2
-		if arr[mid] <= v {
-			left = mid + 1
-		} else {
-			right = mid
-		}
-	}
-	return left
 }
