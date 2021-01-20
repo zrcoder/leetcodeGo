@@ -33,16 +33,16 @@ https://leetcode-cn.com/problems/subsets
 时空复杂度均为O(n*2^n)
 */
 func subsets(nums []int) [][]int {
-	result := [][]int{{}} // 空集也是子集之一
+	res := [][]int{{}} // 空集也是子集之一
 	for _, num := range nums {
-		for _, r := range result {
+		for _, r := range res {
 			tmp := make([]int, len(r)+1)
-			_ = copy(tmp, r)
+			copy(tmp, r)
 			tmp[len(tmp)-1] = num
-			result = append(result, tmp)
+			res = append(res, tmp)
 		}
 	}
-	return result
+	return res
 }
 
 /*
@@ -50,45 +50,45 @@ func subsets(nums []int) [][]int {
 参考 491. 递增子序列 解法二，使用递归枚举子序列的通用模板
 */
 func subsets1(nums []int) [][]int {
-	var result [][]int
-	var curr []int
+	var res [][]int
+	var cur []int
 	var backtrack func(i int)
 	backtrack = func(i int) {
 		if i == len(nums) {
-			result = append(result, copySlice(curr))
+			res = append(res, copySlice(cur))
 			return
 		}
 		// 不选择当前元素
 		backtrack(i + 1)
 		// 选择当前元素
-		curr = append(curr, nums[i])
+		cur = append(cur, nums[i])
 		backtrack(i + 1)
-		curr = curr[:len(curr)-1]
+		cur = cur[:len(cur)-1]
 	}
 	backtrack(0)
-	return result
+	return res
 }
 
 // 回溯2
 func subsets2(nums []int) [][]int {
-	var result [][]int
-	var curr []int
+	var res [][]int
+	var cur []int
 	var backtrack func(start int)
 	backtrack = func(start int) {
-		result = append(result, copySlice(curr))
+		res = append(res, copySlice(cur))
 		for i := start; i < len(nums); i++ {
-			curr = append(curr, nums[i])
+			cur = append(cur, nums[i])
 			backtrack(i + 1)
-			curr = curr[:len(curr)-1]
+			cur = cur[:len(cur)-1]
 		}
 	}
 	backtrack(0)
-	return result
+	return res
 }
 
 func copySlice(s []int) []int {
 	r := make([]int, len(s))
-	_ = copy(r, s)
+	copy(r, s)
 	return r
 }
 
@@ -104,16 +104,16 @@ nums 里的每个元素，要么在结果中，要么不在结果中
 时空复杂度均为O(n*2^n)
 */
 func subsets3(nums []int) [][]int {
-	var result [][]int
-	end := 1 << len(nums)
-	for mask := 0; mask < end; mask++ {
+	var res [][]int
+	max := 1 << len(nums)
+	for state := 0; state < max; state++ {
 		var cur []int
 		for i, v := range nums {
-			if (1<<i)&mask != 0 {
+			if (1<<i)&state != 0 {
 				cur = append(cur, v)
 			}
 		}
-		result = append(result, cur)
+		res = append(res, cur)
 	}
-	return result
+	return res
 }

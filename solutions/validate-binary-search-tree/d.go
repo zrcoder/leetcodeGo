@@ -112,27 +112,6 @@ func isValidBST0(root *TreeNode) bool {
 	return inorder(root)
 }
 
-// 或者
-func isValidBST01(root *TreeNode) bool {
-	var prev *TreeNode
-	result := true // root为nil或空节点的情况应该返回true
-	var inorder func(t *TreeNode)
-	inorder = func(t *TreeNode) {
-		if t == nil {
-			return
-		}
-		inorder(t.Left)
-		if prev != nil && prev.Val >= t.Val {
-			result = false
-			return
-		}
-		prev = t
-		inorder(t.Right)
-	}
-	inorder(root)
-	return result
-}
-
 /* 借助栈，迭代式中序遍历
 时空复杂度均为O(n), n为节点总数
 */

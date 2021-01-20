@@ -25,10 +25,10 @@ package change
 动态规划，用背包的思路来解决这个问题
 */
 func coinChange(coins []int, amount int) int {
-	maxAmount := amount + 1
+	infinityAmount := amount + 1
 	dp := make([]int, amount+1)
 	for i := range dp {
-		dp[i] = maxAmount
+		dp[i] = infinityAmount
 	}
 	dp[0] = 0
 	for _, v := range coins {
@@ -36,7 +36,7 @@ func coinChange(coins []int, amount int) int {
 			dp[j] = min(dp[j], dp[j-v]+1)
 		}
 	}
-	if dp[amount] == maxAmount {
+	if dp[amount] == infinityAmount {
 		return -1
 	}
 	return dp[amount]

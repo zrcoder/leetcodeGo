@@ -40,7 +40,7 @@ func buildTree(preorder []int, inorder []int) *TreeNode {
 		return nil
 	}
 	root := &TreeNode{Val: preorder[0]}
-	i := search(inorder, root.Val)
+	i := search(inorder, root.Val) // 如果在 inorder 里找不到 root.Val 则是非法输入，不够当前题目保证了没有非法输入
 	root.Left = buildTree(preorder[1:i+1], inorder[:i])
 	root.Right = buildTree(preorder[i+1:], inorder[i+1:])
 	return root

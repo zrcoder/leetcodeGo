@@ -65,15 +65,15 @@ func (c *Codec) serialize(root *TreeNode) string {
 
 func (c *Codec) deserialize(data string) *TreeNode {
 	nodes := strings.Split(data, ",")
-	start := 0
+	index := 0
 	var help func() *TreeNode
 	help = func() *TreeNode {
-		if start == len(nodes) {
+		if index == len(nodes) {
 			return nil
 		}
-		val, err := strconv.Atoi(nodes[start])
-		start++
-		if err != nil { // nodes[start] == "#"
+		val, err := strconv.Atoi(nodes[index])
+		index++
+		if err != nil { // nodes[index] == "#"
 			return nil
 		}
 		root := &TreeNode{Val: val}
