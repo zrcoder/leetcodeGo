@@ -22,7 +22,7 @@ LeetCode 问题 Go 语言之旅
         * [[46/47] 全排列](solutions/permutations/readme.md)
         * [[77] 组合](solutions/combinations/d.go)
         * [[39/40/261/377] 组合总和](solutions/combination-sum/readme.md)
-        * [[78] 子集](solutions/subset/d.go)
+        * [[78/1593] 子集](solutions/subset/d.go)
         * [[128] 最长连续序列](solutions/longest-consecutive-sequence/d.go)
         * [[149] 直线上最多的点数](solutions/max-points-on-a-line/d.go)
         * [[215] 数组中的第K个最大元素](solutions/kth-largest-element-in-an-array/d.go)

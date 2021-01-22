@@ -8,11 +8,11 @@ import (
 	"sort"
 )
 
-func rearrangeString(s string, k int) string {
-	if k <= 1 {
-		return s
+func rearrangeString(input string, interval int) string {
+	if interval <= 1 {
+		return input
 	}
-	result := []byte(s)
+	result := []byte(input)
 	pairs := count(result)
 	cmp := func(i, j int) bool {
 		if pairs[i].count == pairs[j].count {
@@ -23,7 +23,7 @@ func rearrangeString(s string, k int) string {
 	sort.Slice(pairs, cmp)
 	j := 0
 	for pairs[0].count > 0 {
-		for i := 0; i < k; i++ {
+		for i := 0; i < interval; i++ {
 			if pairs[0].count == 0 {
 				break
 			}
