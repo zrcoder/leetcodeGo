@@ -1,6 +1,6 @@
 # 遍历二维矩阵
-来源：[力扣（LeetCode）](https://leetcode-cn.com/problems)<br>
-著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
+对于二维矩阵，可以按照有趣的顺序遍历， 如下所示的“方形水波”、螺旋、对角线等几种遍历方法。
+基本上都有一个比较好实现的哈希表解法，另有一个非常精确的遍历解法。
 ## [[1030]方形水波遍历](https://leetcode-cn.com/problems/matrix-cells-in-distance-order)
 ```text
 给出 R 行 C 列的矩阵，其中的单元格的整数坐标为 (r, c)，满足 0 <= r < R 且 0 <= c < C。

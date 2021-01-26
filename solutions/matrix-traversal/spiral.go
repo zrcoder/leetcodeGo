@@ -15,9 +15,9 @@ func spiralOrder(matrix [][]int) []int {
 	m, n := len(matrix), len(matrix[0])
 	rMin, rMax, cMin, cMax := 0, m-1, 0, n-1 // 上下左右边界
 	r, c, direct := 0, 0, right
-	result := make([]int, m*n)
-	for i := range result {
-		result[i] = matrix[r][c]
+	res := make([]int, m*n)
+	for i := range res {
+		res[i] = matrix[r][c]
 		switch direct {
 		case right:
 			if c < cMax {
@@ -45,7 +45,7 @@ func spiralOrder(matrix [][]int) []int {
 			}
 		}
 	}
-	return result
+	return res
 }
 
 // 2。 另一个实现,思路同上一个实现，时空复杂度都是O(m*n)
@@ -55,42 +55,40 @@ func spiralOrder1(matrix [][]int) []int {
 	}
 	m, n := len(matrix), len(matrix[0])
 	rMin, rMax, cMin, cMax := 0, m-1, 0, n-1 // 上下左右边界
-	result := make([]int, m*n)
-	for k := 0; ; {
+	res := make([]int, 0, m*n)
+
+	for levels := (min(m, n) + 1) / 2; levels > 0; levels-- { // 层数
 		for i := cMin; i <= cMax; i++ { // 向右遍历
-			result[k] = matrix[rMin][i]
-			k++
+			res = append(res, matrix[rMin][i])
 		}
 		rMin++ //重新设定上边界，如果发现上边界还在下边界之下，说明遍历完成了，下同
 		if rMin > rMax {
 			break
 		}
 		for i := rMin; i <= rMax; i++ { // 向下遍历
-			result[k] = matrix[i][cMax]
-			k++
+			res = append(res, matrix[i][cMax])
 		}
 		cMax--
 		if cMax < cMin {
 			break
 		}
 		for i := cMax; i >= cMin; i-- { // 向左遍历
-			result[k] = matrix[rMax][i]
-			k++
+			res = append(res, matrix[rMax][i])
 		}
 		rMax--
 		if rMax < rMin {
 			break
 		}
 		for i := rMax; i >= rMin; i-- { // 向上遍历
-			result[k] = matrix[i][cMin]
-			k++
+			res = append(res, matrix[i][cMin])
 		}
 		cMin++
 		if cMin > cMax {
 			break
 		}
+		levels--
 	}
-	return result
+	return res
 }
 
 // 3。从外部向内部逐层遍历打印矩阵，最外面一圈打印完，里面仍然是一个矩阵;时空复杂度都是O(m*n)
@@ -99,28 +97,24 @@ func spiralOrder2(matrix [][]int) []int {
 		return nil
 	}
 	m, n := len(matrix), len(matrix[0])
-	count := (min(m, n) + 1) / 2 //层数
-	result := make([]int, m*n)
-	k := 0
-	for i := 0; i < count; i++ {
-		for j := i; j < n-i; j++ { // 向右
-			result[k] = matrix[i][j]
-			k++
+	levels := (min(m, n) + 1) / 2 //层数
+	res := make([]int, 0, m*n)
+	// 从外层向内层层层遍历
+	for i := 0; i < levels; i++ {
+		for c := i; c < n-i; c++ { // 向右
+			res = append(res, matrix[i][c])
 		}
-		for j := i + 1; j < m-i; j++ { // 向下
-			result[k] = matrix[j][n-1-i]
-			k++
+		for r := i + 1; r < m-i; r++ { // 向下
+			res = append(res, matrix[r][n-1-i])
 		}
-		for j := n - 1 - (i + 1); j >= i && m-1-i != i; j-- { // 向左；可能这一层只有一行，注意判断m-1-i 与 i是否相等
-			result[k] = matrix[m-1-i][j]
-			k++
+		for c := n - 1 - (i + 1); m-1-i != i && c >= i; c-- { // 向左；可能这一层只有一行，注意判断m-1-i 与 i是否相等
+			res = append(res, matrix[m-1-i][c])
 		}
-		for j := m - 1 - (i + 1); j >= i+1 && n-1-i != i; j-- { // 向上；可能这一层只有一列，注意判断n-1-i 与 i是否相等
-			result[k] = matrix[j][i]
-			k++
+		for r := m - 1 - (i + 1); n-1-i != i && r > i; r-- { // 向上；可能这一层只有一列，注意判断n-1-i 与 i是否相等
+			res = append(res, matrix[r][i])
 		}
 	}
-	return result
+	return res
 }
 
 func min(a, b int) int {

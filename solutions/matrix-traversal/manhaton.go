@@ -87,15 +87,13 @@ func allCellsDistOrder1(R int, C int, r0 int, c0 int) [][]int {
 		}
 	}
 
-	result := make([][]int, R*C)
-	k := 0
+	res := make([][]int, 0, R*C)
 	for i := 0; i <= maxDist; i++ {
 		for _, v := range m[i] {
-			result[k] = v
-			k++
+			res = append(res, v)
 		}
 	}
-	return result
+	return res
 }
 
 /*
@@ -103,18 +101,16 @@ func allCellsDistOrder1(R int, C int, r0 int, c0 int) [][]int {
 时间复杂度O(R*C*lg(R*C))， 空间复杂度O(R*C)
 */
 func allCellsDistOrder2(R int, C int, r0 int, c0 int) [][]int {
-	result := make([][]int, R*C)
-	k := 0
+	res := make([][]int, 0, R*C)
 	for r := 0; r < R; r++ {
 		for c := 0; c < C; c++ {
-			result[k] = []int{r, c}
-			k++
+			res = append(res, []int{r, c})
 		}
 	}
-	sort.Slice(result, func(i, j int) bool {
-		return abs(result[i][0]-r0)+abs(result[i][1]-c0) < abs(result[j][0]-r0)+abs(result[j][1]-c0)
+	sort.Slice(res, func(i, j int) bool {
+		return abs(res[i][0]-r0)+abs(res[i][1]-c0) < abs(res[j][0]-r0)+abs(res[j][1]-c0)
 	})
-	return result
+	return res
 }
 
 func abs(a int) int {
