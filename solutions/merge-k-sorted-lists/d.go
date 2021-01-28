@@ -54,6 +54,19 @@ func mergeKLists(lists []*ListNode) *ListNode {
 	return lists[0]
 }
 
+func mergeKLists1(lists []*ListNode) *ListNode {
+	if len(lists) == 0 {
+		return nil
+	}
+	for end := len(lists) - 1; end > 0; {
+		for from := 0; from < end; from++ {
+			lists[from] = merge(lists[from], lists[end])
+			end--
+		}
+	}
+	return lists[0]
+}
+
 func merge(l1, l2 *ListNode) *ListNode {
 	dummy := new(ListNode)
 	for p := dummy; l1 != nil || l2 != nil; p = p.Next {
