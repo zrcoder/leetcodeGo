@@ -55,10 +55,11 @@ func mergeKLists(lists []*ListNode) *ListNode {
 }
 
 func mergeKLists1(lists []*ListNode) *ListNode {
-	if len(lists) == 0 {
+	n := len(lists)
+	if n == 0 {
 		return nil
 	}
-	for end := len(lists) - 1; end > 0; {
+	for end := n - 1; end > 0; {
 		for from := 0; from < end; from++ {
 			lists[from] = merge(lists[from], lists[end])
 			end--

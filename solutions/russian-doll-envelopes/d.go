@@ -29,18 +29,18 @@ func maxEnvelopes(envelopes [][]int) int {
 		}
 		return envelopes[i][0] > envelopes[j][0]
 	})
-	k := 0
+	length := 0
 	for _, v := range envelopes {
-		j := sort.Search(k, func(i int) bool {
+		j := sort.Search(length, func(i int) bool {
 			c := envelopes[i]
 			return c[0] <= v[0] || c[1] <= v[1]
 		})
 		envelopes[j] = v
-		if j == k {
-			k++
+		if j == length {
+			length++
 		}
 	}
-	return k
+	return length
 }
 
 // dp, 时间复杂度O(n^2)

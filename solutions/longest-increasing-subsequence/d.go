@@ -50,25 +50,25 @@ func max(a, b int) int {
 /*
 贪心+二分搜索，二维的（最长上升子序列）lis问题：
 如果要使上升子序列尽可能长，则需要让序列上升得尽可能慢，因此我们希望每次在上升子序列最后加上的那个数尽可能的小。
-建立result数组，遍历nums，遍历到i时：
-如果nums[i] >  result最后元素，直接追加到result
-否则，在result里找到第一个不小于nums[i]的元素result[j] 并更新result[j]为nums[i]
+建立结果数组，遍历 nums，对于当前元素：
+如果大于结果数组最后元素，直接追加到结果数组最后；
+否则，在结果数组里找到第一个不小于当前元素的元素，并将其更新为当前元素。
 
-时间复杂度O(nlgn), 空间复杂度O(n)
+时间复杂度O(nlogn), 空间复杂度O(n)
 */
 func lengthOfLIS0(nums []int) int {
-	result := make([]int, len(nums))
-	k := 0
+	res := make([]int, len(nums))
+	length := 0
 	for _, v := range nums {
-		j := sort.Search(k, func(i int) bool {
-			return result[i] >= v
+		j := sort.Search(length, func(i int) bool {
+			return res[i] >= v
 		})
-		result[j] = v
-		if j == k {
-			k++
+		res[j] = v
+		if j == length {
+			length++
 		}
 	}
-	return k
+	return length
 }
 
 // 如果允许修改nums，result数组可以省略

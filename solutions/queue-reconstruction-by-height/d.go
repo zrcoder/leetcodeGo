@@ -25,16 +25,14 @@ import (
 [[5,0], [7,0], [5,2], [6,1], [4,4], [7,1]]
 */
 /*
-想起中小学时代排队跑操~
+题意有点难理解。可以加点背景说明：一开始人们随便站成了一队，然后班长统计了每个人的身高 h 以及排在其前边不比自己矮的人的个数 k。突然这些人一哄而散跑去看美女了。问题是恢复原来的队列。
 
-题意有点不好理解，这样想一下：
-本来所有人站成一队（不一定有序），这时候统计下每个人前边有几个身高大于等于自己的人
-突然，打乱了这些人的顺序~~~
-问题是恢复这些人的顺序
+这个问题总体思路和上边的信封套娃及叠罗汉问题类似。都是排序，经历粗排和细排两轮。
 
-很自然的思路：
-先按照k升序排序（或者按照身高降序排序），再微调， 原地排序
-时间复杂度O(n^2),空间复杂度O(1)
+很自然的思路：越高的人k 值理应越小。先按照身高降序，在身高相等的时候怎么排呢？k 小的排前边。
+
+在构建结果数组的时候，如果当前人的 k 不小于结果数组的长度，直接把他追加到对尾，否则，用二分法找到他该插入的位置，当然后边的人要一一后移。
+这里需要注意，其实用二分法反而有点浪费，先二分再一一后移一些人，不如放弃二分，一开始直接从结果数组后边向前找，类似冒泡的方法，将当前人插入队里，而他后边的人在冒泡的过程中已经移动好了。
 */
 func reconstructQueue(people [][]int) [][]int {
 	// 先根据k从小到大排序
@@ -64,27 +62,23 @@ func reconstructQueue(people [][]int) [][]int {
 	return people
 }
 
-/*
-如果新开辟一个数组，不用在原地排序，代码会简单一点
-预处理时不但要按身高降序排列，身高相同的时候还要按照k升序排列
-然后从头开始将人们一一放入新开辟的数组，放的时候处理逻辑变得简单
-*/
-func reconstructQueue1(people [][]int) [][]int {
+func reconstructQueue2(people [][]int) [][]int {
 	// 高的排前边，一样高的按照k升序排列
 	sort.Slice(people, func(i, j int) bool {
 		a, b := people[i], people[j]
 		return a[0] > b[0] || a[0] == b[0] && a[1] < b[1]
 	})
-	result := make([][]int, 0, len(people))
+	result := make([][]int, len(people))
+	length := 0
 	for _, p := range people {
 		k := p[1]
-		// 在索引k处插入 p, 实际不会出现 k > len(result) 的情况
-		result = insert(result, k, p)
+		i := length
+		for i > k { // 根据前边的排序，实际不会出现 k > length 的情况
+			result[i] = result[i-1]
+			i--
+		}
+		result[i] = p
+		length++
 	}
 	return result
-}
-
-// 在索引 i 处插入v, 原来 i 及后边的元素后移
-func insert(s [][]int, i int, v []int) [][]int {
-	return append(append(s[:i:i], v), s[i:]...)
 }
