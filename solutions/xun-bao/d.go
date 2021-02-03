@@ -59,37 +59,41 @@ S 和 T 有且只有一个
 */
 var (
 	// 迷宫行数、列数
-	n, m int
-	// 机关 & 石头
-	buttons, stones [][]int
-	// 起点 & 终点
+	m, n int
+	// 机关、石堆
+	mPoses, oPoses [][2]int
+	// 起点、 终点
 	sx, sy, tx, ty int
 	// 下、上、右、左四个方向
-	dirs = [][]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
+	dirs = [4][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
 )
 
-func minimalSteps(maze []string) int {
-	preprocesses(maze)
+const inf = math.MaxInt32
 
-	dist, result := calDist(maze)
-	if result != 0 {
-		return result
+func minimalSteps(maze []string) int {
+	if !Init(maze) {
+		return -1
 	}
 
-	return binaryDp(dist)
+	distMemo, res := calDist(maze)
+	if res != 0 {
+		return res
+	}
+
+	return dp(distMemo)
 }
 
-func preprocesses(maze []string) {
-	n, m = len(maze), len(maze[0])
-	buttons, stones = nil, nil
+func Init(maze []string) bool {
+	m, n = len(maze), len(maze[0])
+	mPoses, oPoses = nil, nil
 	sx, sy, tx, ty = -1, -1, -1, -1
-	for r := 0; r < n; r++ {
-		for c := 0; c < m; c++ {
+	for r := 0; r < m; r++ {
+		for c := 0; c < n; c++ {
 			switch maze[r][c] {
 			case 'M':
-				buttons = append(buttons, []int{r, c})
+				mPoses = append(mPoses, [2]int{r, c})
 			case 'O':
-				stones = append(stones, []int{r, c})
+				oPoses = append(oPoses, [2]int{r, c})
 			case 'S':
 				sx, sy = r, c
 			case 'T':
@@ -97,145 +101,136 @@ func preprocesses(maze []string) {
 			}
 		}
 	}
+	return sx != -1 && tx != -1
 }
 
-// 计算机关、石头、起点、终点间的距离；
-// 发现不可能完成提前返回math.Max；发现没有机关，直接返回从起点到终点的最短距离
+// 返回机关经过某个石堆到达另一个机关（起点/终点）的最小距离
+// 发现不可能完成提前返回 -1；发现没有机关，直接返回从起点到终点的最短距离
 func calDist(maze []string) ([][]int, int) {
-	nb := len(buttons)
-	startDist := bfs(sx, sy, maze)
+	mLen, oLen := len(mPoses), len(oPoses)
+	sDist := bfs(sx, sy, maze)
 	// 边界情况：没有机关
-	if nb == 0 {
-		if startDist[tx][ty] == math.MaxInt32 {
+	if mLen == 0 {
+		if sDist[tx][ty] == inf {
 			return nil, -1
 		}
-		return nil, startDist[tx][ty]
+		return nil, sDist[tx][ty]
 	}
-	result := genMatrix(nb, nb+2)
-	buttonDist := make([][][]int, nb)
-	for i, button := range buttons {
-		buttonDist[i] = bfs(button[0], button[1], maze)
+	// 边界情况：有机关没石堆
+	if oLen == 0 {
+		return nil, -1
+	}
+	// distMemo[i][j] 代表从机关 i 经过某个石堆到达机关 j 的最短距离
+	// j 如果是 mLen，代表的是起点，如果是 mLen+1 代表的是终点
+	distMemo := genMemo(mLen, mLen+2)
+	mDist := make([][][]int, mLen)
+	for i, M := range mPoses {
+		mDist[i] = bfs(M[0], M[1], maze)
 		// 机关 -> 终点
-		result[i][nb+1] = buttonDist[i][tx][ty]
-		if result[i][nb+1] == math.MaxInt32 {
+		distMemo[i][mLen+1] = mDist[i][tx][ty]
+		if distMemo[i][mLen+1] == inf {
 			return nil, -1
 		}
 		// 机关 -> 石头 -> 起点
-		result[i][nb] = calFor(buttonDist[i], startDist)
-		if result[i][nb] == math.MaxInt32 {
+		distMemo[i][mLen] = calByStoneDist(mDist[i], sDist)
+		if distMemo[i][mLen] == inf {
 			return nil, -1
 		}
 	}
-	for i := range buttons {
-		// 机关 -> 石头 -> 另一个机关
-		for j := i + 1; j < nb; j++ {
-			dist := calFor(buttonDist[i], buttonDist[j])
-			result[i][j] = dist
-			result[j][i] = dist
+	// 机关 -> 石头 -> 另一个机关
+	for i := 0; i < mLen-1; i++ {
+		for j := i + 1; j < mLen; j++ {
+			dist := calByStoneDist(mDist[i], mDist[j])
+			if dist == inf {
+				return nil, -1
+			}
+			distMemo[i][j] = dist
+			distMemo[j][i] = dist
 		}
 	}
-	return result, 0
+	return distMemo, 0
 }
 
-func calFor(dist1, dist2 [][]int) int {
-	result := math.MaxInt32
-	for _, stone := range stones {
-		r, c := stone[0], stone[1]
-		if dist1[r][c] == math.MaxInt32 || dist2[r][c] == math.MaxInt32 {
-			continue
-		}
-		total := dist1[r][c] + dist2[r][c]
-		result = min(result, total)
-	}
-	return result
-}
-
-/*
-状态压缩动态规划
-
-因为机关的个数不会超过16， 可以用一个一个16位的二进制数 state 表示状态
-例如 0000110000010001 表示为机关1、5、11、12被触发，其他为 0 的位置对应的机关没有触发
-
-定义dp(state, i)表示在机关i处，触发状态为state的最小步数
-
-*/
-func binaryDp(dist [][]int) int {
-	nb := len(buttons)
-	total := 1 << nb
-	dp := genMatrix(total, nb)
-	for i := range buttons {
-		// 起点经过某个石头堆到机关i的最小距离
-		dp[1<<i][i] = dist[i][nb]
-	}
-	// 由于更新的状态都比未更新的大，所以直接从小到大遍历即可
-	for state := 1; state < total; state++ {
-		for i := range buttons {
-			dpFor(state, i, dist, dp)
-		}
-	}
-	result := math.MaxInt32
-	final := total - 1
-	for i := range buttons {
-		result = min(result, dp[final][i]+dist[i][nb+1])
-	}
-	if result == math.MaxInt32 {
-		return -1
-	}
-	return result
-}
-
-func dpFor(state, button int, dist, dp [][]int) {
-	if state&(1<<button) == 0 { // 机关i未被触发
-		return
-	}
-	for j := range buttons {
-		if state&(1<<j) != 0 { // 机关j被触发
-			continue
-		}
-		next := state | (1 << j)
-		steps := dp[state][button] + dist[button][j]
-		dp[next][j] = min(dp[next][j], steps)
-	}
-}
-
-// 返回的矩阵记录从 (r,c) 点到达每个点的最短距离
-func bfs(r, c int, maze []string) [][]int {
-	dist := genMatrix(n, m)
-	dist[r][c] = 0
-	var queue [][]int
-	queue = append(queue, []int{r, c})
+// 返回的矩阵记录从(x, y) 点到达每个点的最短距离
+func bfs(x, y int, maze []string) [][]int {
+	res := genMemo(m, n)
+	res[x][y] = 0
+	queue := [][]int{{x, y}}
 	for len(queue) > 0 {
-		pos := queue[0]
+		p := queue[0]
 		queue = queue[1:]
-		r, c := pos[0], pos[1]
+		x, y = p[0], p[1]
 		for _, d := range dirs {
-			nr, nc := r+d[0], c+d[1]
-			if canUpdate(nr, nc, maze, dist) {
-				dist[nr][nc] = dist[r][c] + 1
-				queue = append(queue, []int{nr, nc})
+			nx, ny := x+d[0], y+d[1]
+			if check(nx, ny, maze, res) {
+				res[nx][ny] = res[x][y] + 1
+				queue = append(queue, []int{nx, ny})
 			}
 		}
 	}
-	return dist
+	return res
 }
 
-func canUpdate(r, c int, maze []string, result [][]int) bool {
-	return inBound(r, c) && maze[r][c] != '#' && result[r][c] == math.MaxInt32
+func check(r, c int, maze []string, res [][]int) bool {
+	return inBound(r, c) && maze[r][c] != '#' && res[r][c] == inf
 }
 
 func inBound(r, c int) bool {
-	return r >= 0 && r < n && c >= 0 && c < m
+	return r >= 0 && r < m && c >= 0 && c < n
 }
 
-func genMatrix(rows, clomns int) [][]int {
-	result := make([][]int, rows)
+func genMemo(rows, columns int) [][]int {
+	res := make([][]int, rows)
 	for r := 0; r < rows; r++ {
-		result[r] = make([]int, clomns)
-		for c := 0; c < clomns; c++ {
-			result[r][c] = math.MaxInt32
+		res[r] = make([]int, columns)
+		for c := 0; c < columns; c++ {
+			res[r][c] = inf
 		}
 	}
-	return result
+	return res
+}
+
+func calByStoneDist(dist1, dist2 [][]int) int {
+	res := inf
+	for _, stone := range oPoses {
+		r, c := stone[0], stone[1]
+		if dist1[r][c] == inf || dist2[r][c] == inf {
+			continue
+		}
+		res = min(res, dist1[r][c]+dist2[r][c])
+	}
+	return res
+}
+
+func dp(distMemo [][]int) int {
+	mLen := len(mPoses)
+	total := 1 << mLen
+	// memo(state, i)表示在机关i处，触发状态为state的最小步数
+	memo := genMemo(total, mLen)
+	for i := range mPoses {
+		// 起点经过某个石头堆到机关i的最小距离
+		memo[1<<i][i] = distMemo[i][mLen]
+	}
+	for curState := 1; curState < total; curState++ {
+		for i := range mPoses {
+			if curState&(1<<i) == 0 {
+				continue
+			}
+			for j := range mPoses {
+				if curState&(1<<j) != 0 {
+					continue
+				}
+				nextState := curState | (1 << j)
+				memo[nextState][j] = min(memo[nextState][j], memo[curState][i]+distMemo[i][j])
+			}
+		}
+	}
+	res := inf
+	final := total - 1
+	for i := range mPoses {
+		res = min(res, memo[final][i]+distMemo[i][mLen+1])
+	}
+	return res
 }
 
 func min(a, b int) int {
