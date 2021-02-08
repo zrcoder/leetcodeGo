@@ -26,7 +26,7 @@ import "sort"
 动态规划，时间复杂度O(n^2),  空间复杂度O(n)
 */
 func lengthOfLIS(nums []int) int {
-	dp := make([]int, len(nums)) // dp[i]代表nums[0:i+1]的最长子序列长度
+	dp := make([]int, len(nums)) // dp[i]代表以nums[i]结尾的子序列长度
 	maxLen := 0
 	for i, v := range nums {
 		dp[i] = 1 // 一个元素算递增长度为1
@@ -50,20 +50,21 @@ func max(a, b int) int {
 /*
 贪心+二分搜索，二维的（最长上升子序列）lis问题：
 如果要使上升子序列尽可能长，则需要让序列上升得尽可能慢，因此我们希望每次在上升子序列最后加上的那个数尽可能的小。
-建立结果数组，遍历 nums，对于当前元素：
+建立 memo 数组，memo[i]代表长度为 i+1 的递增子序列末尾数字
+遍历 nums，对于当前元素：
 如果大于结果数组最后元素，直接追加到结果数组最后；
 否则，在结果数组里找到第一个不小于当前元素的元素，并将其更新为当前元素。
 
 时间复杂度O(nlogn), 空间复杂度O(n)
 */
 func lengthOfLIS0(nums []int) int {
-	res := make([]int, len(nums))
+	memo := make([]int, len(nums))
 	length := 0
 	for _, v := range nums {
 		j := sort.Search(length, func(i int) bool {
-			return res[i] >= v
+			return memo[i] >= v
 		})
-		res[j] = v
+		memo[j] = v
 		if j == length {
 			length++
 		}
@@ -73,42 +74,15 @@ func lengthOfLIS0(nums []int) int {
 
 // 如果允许修改nums，result数组可以省略
 func lengthOfLIS00(nums []int) int {
-	k := 0
+	length := 0
 	for _, v := range nums {
-		j := sort.Search(k, func(i int) bool {
+		j := sort.Search(length, func(i int) bool {
 			return nums[i] >= v
 		})
 		nums[j] = v
-		if j == k {
-			k++
+		if j == length {
+			length++
 		}
 	}
-	return k
-}
-
-/*
-这是一个纸牌游戏～～
-这里有个解释：https://www.itcodemonkey.com/article/15644.html
-
-二分搜索; 时间复杂度O(nlgn), 空间复杂度O(n)
-*/
-func lengthOfLIS1(nums []int) int {
-	top := make([]int, len(nums))
-	piles := 0
-	for _, v := range nums {
-		left, right := 0, piles
-		for left < right {
-			mid := left + (right-left)/2
-			if top[mid] < v {
-				left = mid + 1
-			} else {
-				right = mid
-			}
-		}
-		if left == piles {
-			piles++
-		}
-		top[left] = v
-	}
-	return piles
+	return length
 }

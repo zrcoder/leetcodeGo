@@ -68,42 +68,40 @@ func (mf *MedianFinder) FindMedian() float64 {
 这样查找中位数还是常数级的复杂度，添加元素的复杂度将为 O(lgn)
 */
 type MedianFinder struct {
-	min, max *Heap
+	small, large *Heap
 }
 
 func Constructor() MedianFinder {
-	min, max := &Heap{}, &Heap{}
-	min.cmp = func(i, j int) bool {
-		return min.s[i] > min.s[j]
+	res := MedianFinder{&Heap{}, &Heap{}}
+	res.small.cmp = func(i, j int) bool {
+		return res.small.s[i] > res.small.s[j]
 	}
-	max.cmp = func(i, j int) bool {
-		return max.s[i] < max.s[j]
+	res.large.cmp = func(i, j int) bool {
+		return res.large.s[i] < res.large.s[j]
 	}
-	return MedianFinder{min, max}
+	return res
 }
 
 func (mf *MedianFinder) AddNum(num int) {
-	if mf.min.Len() == mf.max.Len() {
-		heap.Push(mf.min, num)
+	if mf.small.Len() == mf.large.Len() {
+		mf.small.push(num)
 	} else {
-		heap.Push(mf.max, num)
+		mf.large.push(num)
 	}
-	if mf.max.Len() > 0 && mf.min.s[0] > mf.max.s[0] {
-		top := heap.Pop(mf.min)
-		heap.Push(mf.max, top)
-		top = heap.Pop(mf.max)
-		heap.Push(mf.min, top)
+	if mf.large.Len() > 0 && mf.small.s[0] > mf.large.s[0] {
+		mf.large.push(mf.small.pop())
+		mf.small.push(mf.large.pop())
 	}
 }
 
 func (mf *MedianFinder) FindMedian() float64 {
-	if mf.min.Len() > mf.max.Len() {
-		return float64(mf.min.s[0])
+	if mf.small.Len() > mf.large.Len() {
+		return float64(mf.small.s[0])
 	}
-	if mf.max.Len() == 0 && mf.min.Len() == 0 {
+	if mf.large.Len() == 0 && mf.small.Len() == 0 {
 		return 0
 	}
-	return float64(mf.min.s[0]+mf.max.s[0]) * 0.5
+	return float64(mf.small.s[0]+mf.large.s[0]) * 0.5
 }
 
 type Heap struct {
@@ -116,8 +114,9 @@ func (h *Heap) Less(i, j int) bool { return h.cmp(i, j) }
 func (h *Heap) Swap(i, j int)      { h.s[i], h.s[j] = h.s[j], h.s[i] }
 func (h *Heap) Push(x interface{}) { h.s = append(h.s, x.(int)) }
 func (h *Heap) Pop() interface{} {
-	n := len(h.s)
-	x := h.s[n-1]
-	h.s = h.s[:n-1]
+	x := h.s[h.Len()-1]
+	h.s = h.s[:h.Len()-1]
 	return x
 }
+func (h *Heap) push(x int) { heap.Push(h, x) }
+func (h *Heap) pop() int   { return heap.Pop(h).(int) }
