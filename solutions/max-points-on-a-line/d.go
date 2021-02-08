@@ -45,11 +45,11 @@ func maxPoints(points [][]int) int {
 		return n
 	}
 
-	result := 0
+	res := 0
 	for i := 0; i < n-1; i++ {
 		m := map[Q]int{}
 		same := 0
-		count := 0
+		cnt := 0
 		for j := i + 1; j < n; j++ {
 			if isSame(points[i], points[j]) {
 				same++
@@ -57,11 +57,11 @@ func maxPoints(points [][]int) int {
 			}
 			k := getK(points[i], points[j])
 			m[k]++
-			count = max(count, m[k])
+			cnt = max(cnt, m[k])
 		}
-		result = max(result, count+1+same)
+		res = max(res, cnt+1+same)
 	}
-	return result
+	return res
 }
 
 func isSame(p1, p2 []int) bool {

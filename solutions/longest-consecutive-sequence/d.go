@@ -3,7 +3,7 @@ package longest_consecutive_sequence
 import "sort"
 
 /*
-128. 最长连续序列
+128. 最长连续序列 https://leetcode-cn.com/problems/longest-consecutive-sequence/
 给定一个未排序的整数数组，找出最长连续序列的长度。
 
 要求算法的时间复杂度为 O(n)。
@@ -23,21 +23,21 @@ func longestConsecutive0(nums []int) int {
 		return 0
 	}
 	sort.Ints(nums)
-	result, size := 1, 1
+	res, curLen := 1, 1
 	for i := 1; i < len(nums); i++ {
 		if nums[i-1] == nums[i] {
 			continue
 		}
 		if nums[i-1]+1 == nums[i] {
-			size++
+			curLen++
 		} else {
-			size = 1
+			curLen = 1
 		}
-		if size > result {
-			result = size
+		if curLen > res {
+			res = curLen
 		}
 	}
-	return result
+	return res
 }
 
 /*
@@ -52,28 +52,28 @@ func longestConsecutive0(nums []int) int {
 当然内存占用，纯排序不借用额外空间要优一点
 */
 func longestConsecutive(nums []int) int {
-	visited := make(map[int]bool, len(nums))
+	memo := make(map[int]bool, len(nums))
 	for _, v := range nums {
-		visited[v] = false
+		memo[v] = false
 	}
-	result := 0
-	for num := range visited {
-		if _, exist := visited[num-1]; exist || visited[num] {
+	res := 0
+	for num := range memo {
+		if _, exist := memo[num-1]; exist || memo[num] {
 			continue
 		}
-		visited[num] = true
-		currStreak := 1
+		memo[num] = true
+		currLen := 1
 		currNum := num + 1
-		_, exist := visited[currNum]
+		_, exist := memo[currNum]
 		for exist {
-			visited[currNum] = true
-			currStreak++
+			memo[currNum] = true
+			currLen++
 			currNum++
-			_, exist = visited[currNum]
+			_, exist = memo[currNum]
 		}
-		if currStreak > result {
-			result = currStreak
+		if currLen > res {
+			res = currLen
 		}
 	}
-	return result
+	return res
 }
