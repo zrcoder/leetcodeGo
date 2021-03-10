@@ -50,76 +50,43 @@ C 可以放在 D (500) 和 M (1000) 的左边，来表示 400 和 900。
 链接：https://leetcode-cn.com/problems/integer-to-roman
 著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
 */
-func intToRoman1(num int) string {
-	buf := strings.Builder{}
-	dic := map[int]string{
-		1:    "I",
-		5:    "V",
-		10:   "X",
-		50:   "L",
-		100:  "C",
-		500:  "D",
-		1000: "M",
-		4:    "IV",
-		9:    "IX",
-		40:   "XL",
-		90:   "XC",
-		400:  "CD",
-		900:  "CM",
-	}
-	for c := 1000; num > 0; num, c = num%c, c/10 {
-		n := num / c
-		if n == 9 {
-			buf.WriteString(dic[9*c])
-			continue
+
+var dic = map[int]byte{
+	1:    'I',
+	5:    'V',
+	10:   'X',
+	50:   'L',
+	100:  'C',
+	500:  'D',
+	1000: 'M',
+}
+
+func intToRoman(num int) string {
+	buf := &strings.Builder{}
+	flag := 1000
+	for num > 0 {
+		cnt := num / flag
+		num %= flag
+		switch {
+		case cnt > 9, cnt < 4:
+			repeat(cnt, dic[flag], buf)
+		case cnt == 9:
+			buf.WriteByte(dic[flag])
+			buf.WriteByte(dic[flag*10])
+		case cnt >= 5:
+			buf.WriteByte(dic[flag*5])
+			repeat(cnt-5, dic[flag], buf)
+		case cnt == 4:
+			buf.WriteByte(dic[flag])
+			buf.WriteByte(dic[flag*5])
 		}
-		if n >= 5 {
-			buf.WriteString(dic[5*c])
-			n -= 5
-		}
-		if n == 4 {
-			buf.WriteString(dic[4*c])
-			continue
-		}
-		for i := 0; i < n; i++ {
-			buf.WriteString(dic[c])
-		}
+		flag /= 10
 	}
 	return buf.String()
 }
-func intToRoman(num int) string {
-	dic := map[int]byte{
-		1:    'I',
-		5:    'V',
-		10:   'X',
-		50:   'L',
-		100:  'C',
-		500:  'D',
-		1000: 'M',
+
+func repeat(n int, b byte, buf *strings.Builder) {
+	for ; n > 0; n-- {
+		buf.WriteByte(b)
 	}
-	buf := strings.Builder{}
-	m := 1000
-	for num > 0 {
-		count := num / m
-		num -= count * m
-		switch {
-		case count == 9:
-			buf.WriteByte(dic[m])
-			buf.WriteByte(dic[m*10])
-		case count >= 5:
-			buf.WriteByte(dic[m*5])
-			for count -= 5; count > 0; count-- {
-				buf.WriteByte(dic[m])
-			}
-		case count == 4:
-			buf.WriteByte(dic[m])
-			buf.WriteByte(dic[m*5])
-		default:
-			for ; count > 0; count-- {
-				buf.WriteByte(dic[m])
-			}
-		}
-		m /= 10
-	}
-	return buf.String()
 }

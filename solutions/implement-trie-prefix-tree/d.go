@@ -136,22 +136,24 @@ func Constructor1() MapSum {
 }
 
 func (s *MapSum) Insert(key string, val int) {
+	node := s
 	for i := range key {
-		if s.links[key[i]] == nil {
-			s.links[key[i]] = &MapSum{links: map[byte]*MapSum{}}
+		if node.links[key[i]] == nil {
+			node.links[key[i]] = &MapSum{links: map[byte]*MapSum{}}
 		}
-		s = s.links[key[i]]
+		node = node.links[key[i]]
 	}
-	s.val = val
-	s.isEnd = true
+	node.val = val
+	node.isEnd = true
 }
 
 func (s *MapSum) Sum(prefix string) int {
+	node := s
 	for i := range prefix {
-		if s.links[prefix[i]] == nil {
+		if node.links[prefix[i]] == nil {
 			return 0
 		}
-		s = s.links[prefix[i]]
+		node = node.links[prefix[i]]
 	}
 	result := 0
 	var dfs func(t *MapSum)
@@ -163,24 +165,24 @@ func (s *MapSum) Sum(prefix string) int {
 			dfs(v)
 		}
 	}
-	dfs(s)
+	dfs(node)
 	return result
 	// 也可用bfs，如：
-	// queue, total := []*MapSum{s}, 0
-	// if s.isEnd {
-	// 	total += s.val
-	// }
-	// for len(queue) > 0 {
-	// 	node := queue[0]
-	// 	queue = queue[1:]
-	// 	for _, next := range node.links {
-	// 		if next.isEnd {
-	// 			total += next.val
-	// 		}
-	// 		queue = append(queue, next)
-	// 	}
-	// }
-	// return total
+	//queue, total := []*MapSum{node}, 0
+	//if node.isEnd {
+	//	total += node.val
+	//}
+	//for len(queue) > 0 {
+	//	node := queue[0]
+	//	queue = queue[1:]
+	//	for _, next := range node.links {
+	//		if next.isEnd {
+	//			total += next.val
+	//		}
+	//		queue = append(queue, next)
+	//	}
+	//}
+	//return total
 }
 
 /* 应用
@@ -211,26 +213,27 @@ func replaceWords(dict []string, sentence string) string {
 	for _, v := range dict {
 		trie.Insert(v)
 	}
-	result := strings.Split(sentence, " ")
-	for i, v := range result {
+	res := strings.Split(sentence, " ")
+	for i, v := range res {
 		p := trie.SearchBreifPrifix(v)
 		if p != "" {
-			result[i] = p
+			res[i] = p
 		}
 	}
-	return strings.Join(result, " ")
+	return strings.Join(res, " ")
 }
 
 func (t *Trie) SearchBreifPrifix(word string) string {
 	i := 0
+	node := t
 	for i < len(word) {
-		if t.IsEnd || t.links[word[i]] == nil {
+		if node.IsEnd || node.links[word[i]] == nil {
 			break
 		}
-		t = t.links[word[i]]
+		node = node.links[word[i]]
 		i++
 	}
-	if t.IsEnd {
+	if node.IsEnd {
 		return word[:i]
 	}
 	return ""
@@ -269,32 +272,34 @@ func Constructor2() WordDictionary {
 }
 
 func (d *WordDictionary) AddWord(word string) {
+	node := d
 	for i := range word {
-		if d.links[word[i]] == nil {
-			d.links[word[i]] = &WordDictionary{links: map[byte]*WordDictionary{}}
+		if node.links[word[i]] == nil {
+			node.links[word[i]] = &WordDictionary{links: map[byte]*WordDictionary{}}
 		}
-		d = d.links[word[i]]
+		node = node.links[word[i]]
 	}
-	d.isEnd = true
+	node.isEnd = true
 }
 
 func (d *WordDictionary) Search(word string) bool {
+	node := d
 	if len(word) == 0 {
-		return d.isEnd
+		return node.isEnd
 	}
-	if len(d.links) == 0 || word[0] != '.' && d.links[word[0]] == nil {
+	if len(node.links) == 0 || word[0] != '.' && node.links[word[0]] == nil {
 		return false
 	}
 	if word[0] == '.' {
-		for _, v := range d.links {
+		for _, v := range node.links {
 			if v.Search(word[1:]) {
 				return true
 			}
 		}
 		return false
 	}
-	d = d.links[word[0]]
-	return d.Search(word[1:])
+	node = node.links[word[0]]
+	return node.Search(word[1:])
 }
 
 /*
