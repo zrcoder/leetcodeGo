@@ -19,19 +19,16 @@ import "container/list"
 输出: 10
 */
 /*
-朴素实现1，遍历所有宽度形成的矩形，如在[i,j]形成的矩形，面积 = 宽度 * min(heights[i:j+1]
+朴素实现1，枚举所有宽度形成的矩形，如在[i,j]形成的矩形，面积 = 宽度 * heights[i:j+1] 中最小高度
 
-时间复杂度O(n^2), 空间复杂度O(1)
+时间复杂度O(n^3), 空间复杂度O(1)
 有用例超时
 */
 func largestRectangleArea01(heights []int) int {
 	res := 0
 	for i := range heights {
 		for j := i; j < len(heights); j++ {
-			s := (j - i + 1) * min(heights[i:j+1])
-			if s > res {
-				res = s
-			}
+			res = max(res, (j-i+1)*min(heights[i:j+1]))
 		}
 	}
 	return res
@@ -39,7 +36,7 @@ func largestRectangleArea01(heights []int) int {
 
 /*
 朴素实现2， 遍历所有高度，对每个高度向左右扩展，直到到达边界或高度小于当前高度
-时空复杂度同上, 实测AC了~~
+时间复杂度O(n^2), 空间复杂度O(1), 实测AC了~~
 */
 func largestRectangleArea02(heights []int) int {
 	res := 0
@@ -62,47 +59,47 @@ func largestRectangleArea02(heights []int) int {
 */
 func largestRectangleArea(heights []int) int {
 	left, right := calLeft(heights), calRight(heights)
-	result := 0
-	for i, v := range heights {
-		result = max(result, (right[i]-left[i]-1)*v)
+	res := 0
+	for i, h := range heights {
+		res = max(res, (right[i]-left[i]-1)*h)
 	}
-	return result
+	return res
 }
 
 // 找到每个位置左侧距离最近且高度小于当前位置高度的位置
 func calLeft(heights []int) []int {
-	r := make([]int, len(heights))
+	res := make([]int, len(heights))
 	stack := list.New()
-	for i, v := range heights {
-		for stack.Len() > 0 && heights[stack.Back().Value.(int)] >= v {
-			_ = stack.Remove(stack.Back())
+	for i, h := range heights {
+		for stack.Len() > 0 && heights[stack.Back().Value.(int)] >= h {
+			stack.Remove(stack.Back())
 		}
 		if stack.Len() == 0 {
-			r[i] = -1
+			res[i] = -1
 		} else {
-			r[i] = stack.Back().Value.(int)
+			res[i] = stack.Back().Value.(int)
 		}
 		stack.PushBack(i)
 	}
-	return r
+	return res
 }
 
 // 找到每个位置右侧距离最近且高度小于当前位置的位置
 func calRight(heights []int) []int {
-	r := make([]int, len(heights))
+	res := make([]int, len(heights))
 	stack := list.New()
 	for i := len(heights) - 1; i >= 0; i-- {
 		for stack.Len() > 0 && heights[stack.Back().Value.(int)] >= heights[i] {
-			_ = stack.Remove(stack.Back())
+			stack.Remove(stack.Back())
 		}
 		if stack.Len() == 0 {
-			r[i] = len(heights)
+			res[i] = len(heights)
 		} else {
-			r[i] = stack.Back().Value.(int)
+			res[i] = stack.Back().Value.(int)
 		}
 		stack.PushBack(i)
 	}
-	return r
+	return res
 }
 
 func min(arr []int) int {

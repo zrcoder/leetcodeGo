@@ -16,11 +16,53 @@ package trapping_rain_water
 输出: 6
 */
 /*
-左右指针向中间凑，对于左右的峰值，因为短板效应，哪边小处理哪边
-假设处理的是左边，用一个变量记录峰值， 在元素小于等于峰值的情况下左指针一直右移且累加雨水面积（即峰值与元素值的差值）
-如果出现新的峰值，更新记录峰值的变量，且和右边峰值比较决定处理哪边
-右边的处理同理
-时间复杂度O(n), 空间复杂度O(1)
+#### 考虑每个位置能接到的雨水量
+
+遍历数组，对于位置 i，考虑可以接到多少雨水。
+
+显然这由左右两侧比当前位置高的柱子的高度来决定，实际生要找到左右两侧最高的柱子。如果知道左侧最高的高度 leftMax 和右侧最高的高度 rightMax，那么 i 处能接到雨水量为 `min(leftMax, rightMax)-height[i]`。
+
+> 注意，可能左右侧最高的柱子也没有当前柱子 height[i] 高，接到雨水量为 0。这样的话可以让 leftMax 或 rightMax 等于 height[i]`，不影响结果。
+
+为了降低复杂度，可以事先用动态规划的方式计算出前缀最大值和后缀最大值数组，再遍历一遍得到结果，这样会使线性复杂度。
+*/
+func trap0(height []int) int {
+	n := len(height)
+	if n == 0 {
+		return 0
+	}
+
+	prefixMax := make([]int, n)
+	prefixMax[0] = height[0]
+	for i := 1; i < n; i++ {
+		prefixMax[i] = max(prefixMax[i-1], height[i])
+	}
+
+	suffixMax := make([]int, n)
+	suffixMax[n-1] = height[n-1]
+	for i := n - 2; i >= 0; i-- {
+		suffixMax[i] = max(suffixMax[i+1], height[i])
+	}
+
+	res := 0
+	for i, h := range height {
+		res += min(prefixMax[i], suffixMax[i]) - h
+	}
+	return res
+}
+
+/*
+#### 双指针优化
+
+实际上上边的两个数组可以用两个变量代替，这样就能降低空间复杂度。
+
+使用左右双指针left、right 向中间凑，用两个变量 leftPeek，rightPeek 来维护左右峰值。
+
+每次移动指针后，先根据左右指针处的值leftVal 和 rightVal 更新 leftPeek 和 rightPeek，再分情况讨论：
+
+如果 leftVal < rightVal， 必有 leftPeek < rightPeek，可以确定 left 处的接雨水量为 leftPeek - leftVal；反之，可以确定 right 处的接雨水量为 rightPeek - rightVal。
+
+如果确定了 left 处的结果，就向右移动 left 指针，反之向左移动 right 指针，直到两个指针相遇。
 */
 func trap(height []int) int {
 	n := len(height)
@@ -29,38 +71,35 @@ func trap(height []int) int {
 	}
 	left, right := 0, n-1
 	leftPeek, rightPeek := 0, 0
-	sum := 0
+	res := 0
 	for left < right {
 		leftVal, rightVal := height[left], height[right]
+		leftPeek = max(leftPeek, leftVal)
+		rightPeek = max(rightPeek, rightVal)
 		if leftVal < rightVal { // 处理左侧
-			if leftVal >= leftPeek {
-				leftPeek = leftVal
-			} else {
-				sum += leftPeek - leftVal
-			}
+			res += leftPeek - leftVal
 			left++
 		} else { // 处理右侧
-			if rightVal >= rightPeek {
-				rightPeek = rightVal
-			} else {
-				sum += rightPeek - rightVal
-			}
+			res += rightPeek - rightVal
 			right--
 		}
 	}
-	return sum
+	return res
 }
 
 /*
-借助栈的解法
-https://leetcode-cn.com/problems/trapping-rain-water/solution/jie-yu-shui-by-leetcode
+#### 单调栈
 
-遍历数组时维护一个栈，记录可能存水的条形块的索引。
-如果当前条形块小于或等于栈顶索引对应的条形块，将条形块的索引入栈，意思是当前的条形块被栈中的前一个条形块界定。
-如果当前条形块大于栈顶索引对应的条形块，可以确定栈顶的条形块被当前条形块和栈的前一个条形块界定，因此可以弹出栈顶元素并且累加答案
+这个思路不容易想到。
 
-时间复杂度：O(n)。
-单次遍历O(n) ，每个条形块最多访问两次（由于栈的弹入和弹出），并且弹入和弹出栈都是 O(1)的。
+遍历数组时维护一个单调递减栈，记录可能存水的条形块的索引。
+
+每次如果当前柱子 i 大于栈顶索引对应的柱子，可以确定栈顶的柱子比当前 i 处柱子和栈的前一个柱子低，因此可以弹出栈顶元素并且累加答案。
+
+如果当前柱子 i 小于或等于栈顶索引对应的条形块，将 i 入栈，意思是当前柱子被栈中的前一个条形块界定。
+
+时间复杂度：O(n)。单次遍历O(n) ，每个条形块最多访问两次（由于栈的弹入和弹出），并且弹入和弹出栈都是 O(1)的。
+
 空间复杂度：O(n)。 栈最多在阶梯型或平坦型条形块结构中占用 O(n)的空间。
 */
 func trap1(height []int) int {
@@ -68,8 +107,8 @@ func trap1(height []int) int {
 	if n < 3 {
 		return 0
 	}
-	sum := 0
-	var stack []int // 记录可能存水的条形块的索引
+	res := 0
+	var stack []int // 记录可能存水的柱子索引
 	for i, v := range height {
 		for len(stack) > 0 && v > height[stack[len(stack)-1]] {
 			top := stack[len(stack)-1]
@@ -78,17 +117,24 @@ func trap1(height []int) int {
 				break
 			}
 			newTop := stack[len(stack)-1]
-			distance := i - newTop - 1
+			width := i - newTop - 1
 			boundHeight := min(v, height[newTop]) - height[top]
-			sum += distance * boundHeight
+			res += width * boundHeight
 		}
 		stack = append(stack, i)
 	}
-	return sum
+	return res
 }
 
 func min(a, b int) int {
 	if a < b {
+		return a
+	}
+	return b
+}
+
+func max(a, b int) int {
+	if a > b {
 		return a
 	}
 	return b
