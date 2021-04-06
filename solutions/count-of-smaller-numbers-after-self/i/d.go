@@ -8,43 +8,36 @@ package i
 面试题51. 数组中的逆序对 https://leetcode-cn.com/problems/shu-zu-zhong-de-ni-xu-dui-lcof/
 */
 
+var count int
+
 func reversePairs(nums []int) int {
-	var count int
-	mergeSort(nums, &count)
+	count = 0
+	mergeSort(nums)
 	return count
 }
 
-func mergeSort(nums []int, count *int) {
+func mergeSort(nums []int) {
 	if len(nums) < 2 {
 		return
 	}
 	mid := len(nums) / 2
-	left := make([]int, mid)
-	right := make([]int, len(nums)-mid)
-	_ = copy(left, nums[:mid])
-	_ = copy(right, nums[mid:])
-	mergeSort(left, count)
-	mergeSort(right, count)
-	merge(left, right, nums, count)
+	left := append([]int{}, nums[:mid]...)
+	right := append([]int{}, nums[mid:]...)
+	mergeSort(left)
+	mergeSort(right)
+	merge(left, right, nums)
 }
 
-func merge(left, right, nums []int, count *int) {
-	var i, j, k int
-	for ; i < len(left) && j < len(right); k++ {
-		if left[i] <= right[j] {
-			*count += j // left[i] 要比right[0:j]共j个元素大
+func merge(left, right, nums []int) {
+	var i, j int
+	for k := 0; k < len(nums); k++ {
+		if j == len(right) || i < len(left) && left[i] <= right[j] {
+			count += j // left[i] 要比right[0:j]共j个元素大
 			nums[k] = left[i]
 			i++
 		} else {
 			nums[k] = right[j]
 			j++
 		}
-	}
-	for ; i < len(left); i, k = i+1, k+1 {
-		*count += j // 左侧剩余的元素同样要比j个（等于len（right））right部分元素大
-		nums[k] = left[i]
-	}
-	for ; j < len(right); j, k = j+1, k+1 {
-		nums[k] = right[j]
 	}
 }
