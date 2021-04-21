@@ -1,7 +1,10 @@
 # leetcodeGo
 LeetCode 问题 Go 语言之旅
 
-[GitBook 电子书](https://zrcoder.github.io/leetcode)
+不再更新，开始同步制作电子书，且新内容只在电子书增加。
+[观看电子书](https://zrcoder.github.io/leetcode)
+
+
 * learn
     * [二分法](learn/binary-search-problem.md)
     * [并查集](learn/union-find.md)
